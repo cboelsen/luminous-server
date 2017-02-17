@@ -1,6 +1,5 @@
 import pathlib
 import piexif
-import random
 import re
 
 from jpegtran import JPEGImage
@@ -11,14 +10,15 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import status, routers, viewsets
 
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import detail_route
 from rest_framework.exceptions import (
     APIException,
     # NotAuthenticated,
-    NotFound,
+    # NotFound,
     ParseError,
     # PermissionDenied,
 )
+from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from .models import (
@@ -94,8 +94,16 @@ class PhotoViewSet(viewsets.ModelViewSet):
     """
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
-    filter_backends = (DjangoFilterBackend, )
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
     filter_fields = all_filters(PhotoSerializer)
+    ordering_fields = ('date', 'path', '?')
+
+    def get_serializer_context(self):
+        return {
+            'request': None,
+            'format': self.format_kwarg,
+            'view': self,
+        }
 
     def destroy(self, request, *args, **kwargs):
         raise NotImplementedError('no delete via API')
@@ -113,7 +121,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
         photo = self.get_object()
 
         if 'rating' in request.data:
-            rating = int(request['data'])
+            rating = int(request.data['rating'])
             if rating != photo.rating:
                 assert 0 <= rating <= 100
                 write_rating_to_exif(photo.path, rating)
@@ -131,7 +139,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
 
     @detail_route(methods=['get'])
     def image(self, request, pk=None):
-        max_width, max_height = 3840, 2160
+        max_dimension = 3840
         params = self.request.query_params.dict()
         width = int(params.get('width', 0))
         height = int(params.get('height', 0))
@@ -139,29 +147,16 @@ class PhotoViewSet(viewsets.ModelViewSet):
         photo = Photo.objects.get(id=pk)
 
         if width and height:
-            if width > max_width or height > max_height:
+            if width > max_dimension or height > max_dimension:
                 raise APIException(
                     'Requested image size cannot be greater than 4K resolution',
-                    'The maximum requested image size must be less than {} x {}.'.format(max_width, max_height)
+                    'The maximum requested image size must be less than {} '
+                    'pixels in width and height.'.format(max_dimension)
                 )
             image_data = scale_image_to_fit_size(photo.path, (width, height))
         else:
             image_data = open(photo.path, 'rb').read()
         return HttpResponse(image_data, content_type='image/jpeg')
-
-    @list_route(methods=['get'])
-    def random(self, request):
-        queryset = self.filter_queryset(self.get_queryset())
-        num_photos = queryset.count()
-        if num_photos < 1:
-            raise NotFound()
-        photos_to_get = int(request.query_params.get('limit', 1))
-        photos = []
-        for _ in range(photos_to_get):
-            row = random.randint(0, num_photos - 1)
-            photo = queryset[row]
-            photos.append(photo)
-        return Response(self.serializer_class(photos, many=True, context={'request': None}).data)
 
     @detail_route(methods=['put', 'patch'])
     def rotate(self, request, pk=None):

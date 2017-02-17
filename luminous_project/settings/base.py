@@ -53,7 +53,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100,
+    'PAGE_SIZE': 20,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
@@ -111,7 +111,7 @@ RAVEN_CONFIG = {
     'dsn': 'http://441657a3e3e04416b0c13f3bbef7ba65:7472d64637ff4dedb35fd70f17b1499b@sentry.boelsen.net/2',
     # If you are using git, you can also automatically configure the
     # release based on the git info.
-    'release': raven.fetch_git_sha(os.path.dirname(__file__)),
+    # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
 }
 
 

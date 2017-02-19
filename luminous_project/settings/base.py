@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 import raven
 
+from ..pkg import get_package_details_from_filepath
+
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -111,7 +114,7 @@ RAVEN_CONFIG = {
     'dsn': 'http://441657a3e3e04416b0c13f3bbef7ba65:7472d64637ff4dedb35fd70f17b1499b@sentry.boelsen.net/2',
     # If you are using git, you can also automatically configure the
     # release based on the git info.
-    # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
+    'release': get_package_details_from_filepath(__file__).version,
 }
 
 

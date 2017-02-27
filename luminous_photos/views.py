@@ -8,7 +8,7 @@ from django.http import HttpResponse
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import status, routers, viewsets
+from rest_framework import routers, viewsets
 
 from rest_framework.decorators import detail_route
 from rest_framework.exceptions import (
@@ -173,7 +173,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
 
         photo.landscape_orientation = (img.width > img.height)
         photo.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(PhotoSerializer(photo, context={'request': None}).data)
 
 
 router = routers.DefaultRouter()

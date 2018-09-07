@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from ...models import Photo
 
 
-def get_title_from_path(path):
+def get_title_from_path(path: pathlib.Path):
     filename = str(path.stem)
     photo_has_date_prefix = re.compile(r'^\d{4}\.\d{2}\.\d{2}-\d{3,4} - ').match
     if photo_has_date_prefix(filename):
@@ -19,7 +19,7 @@ def get_title_from_path(path):
     return title
 
 
-def create_photo_from_path(path):
+def create_photo_from_path(path: pathlib.Path):
     album = str(path.parent.name)
     title = get_title_from_path(path)
     return Photo(

@@ -2,6 +2,8 @@ import pathlib
 import piexif
 import re
 
+from typing import Tuple
+
 from jpegtran import JPEGImage
 
 from django.http import HttpResponse
@@ -29,6 +31,9 @@ from .serializers import (
 )
 
 
+Size = Tuple[int, int]
+
+
 def check_request_data_for(request, required_parameters):
     if not all(p in request.data for p in required_parameters):
         raise ParseError('Request body requires all of: {}'.format(required_parameters))
@@ -45,15 +50,16 @@ def all_filters(serializer_class):
     return filters
 
 
-def proportionally_scale_dimensions(img, size):
-    ratio_w, ratio_h = img.width / size[0], img.height / size[1]
+def proportionally_scale_dimensions(img, size: Size):
+    window_w, window_h = size
+    ratio_w, ratio_h = img.width / window_w, img.height / window_h
     ratio = ratio_w if ratio_w > ratio_h else ratio_h
-    new_width = int(img.width // ratio)
-    new_height = int(img.height // ratio)
+    new_width = int(round(img.width / ratio))
+    new_height = int(round(img.height / ratio))
     return (new_width, new_height)
 
 
-def scale_image_to_fit_size(path, size):
+def scale_image_to_fit_size(path: str, size: Size):
     desired_width, desired_height = size
     img = JPEGImage(path)
     if img.width < desired_width and img.height < desired_height:
@@ -62,14 +68,14 @@ def scale_image_to_fit_size(path, size):
     return bytes(downscaled_image.data)
 
 
-def write_rating_to_exif(path, rating):
+def write_rating_to_exif(path: str, rating: int):
     exif_dict = piexif.load(path)
     exif_dict['0th'][piexif.ImageIFD.Rating] = rating
     exif_bytes = piexif.dump(exif_dict)
     piexif.insert(exif_bytes, path)
 
 
-def regenerate_path_from_new_title(photo, new_title):
+def regenerate_path_from_new_title(photo: Photo, new_title: str):
     current_path = pathlib.Path(photo.path)
     try:
         index = re.match(r'\d{4}\.\d{2}\.\d{2}-(?P<index>\d{3,4}).*\.jpg', current_path.name).group('index')
@@ -164,7 +170,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
         rotation = int(request.data['rotation'])
         acceptable_rotations = [90, 180, 270]
         if rotation not in acceptable_rotations:
-            raise ParseError('Can only rotate by 90 or 270 degrees.')
+            raise ParseError('Can only rotate by {} degrees.'.format(', '.join(map(str, acceptable_rotations))))
 
         photo = Photo.objects.get(id=pk)
         img = JPEGImage(photo.path)

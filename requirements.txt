@@ -1,0 +1,10 @@
+coreapi >= 2.0
+django >= 1.10
+djangorestframework >= 3.5
+django-cors-headers >= 2.0
+django-filter >= 1.0.1
+gunicorn >= 19.4.5
+jpegtran-cffi >= 0.5.2
+openapi-codec >= 1.1.7
+piexif >= 1.0.3
+raven >= 5.11.2

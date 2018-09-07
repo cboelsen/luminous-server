@@ -14,7 +14,7 @@ from ...models import Photo
 ExifTags = namedtuple('ExifTags', ['rating', 'date', 'width', 'height'])
 
 
-def extract_exif_from_photo(path):
+def extract_exif_from_photo(path: str):
     tags = {
         'rating': ('0th', piexif.ImageIFD.Rating),
         'width': ('Exif', piexif.ExifIFD.PixelXDimension),
@@ -42,7 +42,7 @@ def extract_exif_from_photo(path):
     return ExifTags(info['rating'], info['date'], info['width'], info['height'])
 
 
-def update_photo_from_exif(photo):
+def update_photo_from_exif(photo: Photo):
     exif = extract_exif_from_photo(photo.path)
     need_to_save = False
     if photo.rating != exif.rating and exif.rating != 50 and exif.rating is not None:

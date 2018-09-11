@@ -29,7 +29,7 @@ RUN apk update && \
 
 COPY --from=build /var/lib/luminous /var/lib/luminous
 
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY run_server_dev.py /tmp/
+COPY files/supervisord.conf /etc/supervisor/supervisord.conf
+COPY files/run_server_dev.py /tmp/
 
 ENTRYPOINT ["/var/lib/luminous/bin/python", "-u", "/tmp/run_server_dev.py"]

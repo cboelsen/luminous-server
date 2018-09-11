@@ -60,14 +60,18 @@ def update_photo_from_exif(photo: Photo):
         photo.save()
 
 
+def extract_photo_info_from_exif():
+    filters_list = [
+        {'date__isnull': True},
+        {'landscape_orientation__isnull': True},
+    ]
+    for filters in filters_list:
+        for photo in Photo.objects.filter(**filters):
+            update_photo_from_exif(photo)
+
+
 class Command(BaseCommand):
     help = 'Find and add new photos, and remove non-existent photos'
 
     def handle(self, *args, **options):
-        filters_list = [
-            {'date__isnull': True},
-            {'landscape_orientation__isnull': True},
-        ]
-        for filters in filters_list:
-            for photo in Photo.objects.filter(**filters):
-                update_photo_from_exif(photo)
+        extract_photo_info_from_exif()

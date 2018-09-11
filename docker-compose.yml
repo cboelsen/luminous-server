@@ -1,0 +1,43 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment: &PG_ENV
+      POSTGRES_USER: test_chest
+      POSTGRES_PASSWORD: postgres_password
+    volumes:
+      - ./db:/var/lib/postgresql/data
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      <<: *PG_ENV
+    depends_on:
+      - db
+    volumes:
+      - ./luminous_photos/migrations:/var/lib/luminous/lib/python3.5/site-packages/luminous_photos/migrations
+      - /home/cboelsen/tmp/img:/media
+    labels:
+      - "traefik.backend=luminous-api-backend"
+      - "traefik.frontend.rule=Host: localhost; PathPrefix: /api"
+      - "traefik.port=8000"
+  static:
+    build:
+      context: ../luminous-web
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV
+    labels:
+      - "traefik.backend=luminous-static-backend"
+      - "traefik.frontend.rule=Host: localhost"
+      - "traefik.port=80"
+  proxy:
+    image: traefik
+    ports:
+      - "3456:80"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./files/traefik.toml:/etc/traefik/traefik.toml
+    command: --docker --loglevel=info

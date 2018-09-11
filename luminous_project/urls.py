@@ -44,11 +44,11 @@ swagger_view = get_schema_view(
 )
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^$', swagger_view),
-    url(r'^v1/', include(views.router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api-token-auth/', auth_views.obtain_auth_token)
+    url(r'^api/admin/', admin.site.urls),
+    url(r'^api/$', swagger_view),
+    url(r'^api/v1/', include(views.router.urls)),
+    url(r'^api/auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/token-auth/', auth_views.obtain_auth_token)
 ]
 
 urlpatterns += staticfiles_urlpatterns()

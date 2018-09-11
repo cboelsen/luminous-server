@@ -38,6 +38,9 @@ def create_test_user():
     u, _ = User.objects.get_or_create(username='test')
     u.set_password('test')
     u.is_staff = True
+    from django.contrib.auth.models import Permission
+    for p in Permission.objects.all():
+        u.user_permissions.add(p)
     u.save()
 
 

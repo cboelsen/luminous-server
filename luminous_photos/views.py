@@ -43,7 +43,7 @@ def all_filters(serializer_class):
     QUERY_TERMS = {
         'exact', 'iexact', 'contains', 'icontains', 'gt', 'gte', 'lt', 'lte',
         'in', 'startswith', 'istartswith', 'endswith', 'iendswith', 'range',
-        'isnull', 'search', 'regex', 'iregex',
+        'isnull', 'regex', 'iregex',
     }
     fields = serializer_class().get_fields()
     filters = {f: QUERY_TERMS for f in fields if f != 'url'}
